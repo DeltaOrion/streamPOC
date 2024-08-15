@@ -1,53 +1,48 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { StreamChat } from "stream-chat";
-import {
-    chatApiKey,
-    chatUserId,
-    chatUserName,
-    chatUserToken
-} from "./chatConfig";
-
-//In a real app we would store the user details in the backend and fetch it
-//in some programatic way
-const user = {
-  id: chatUserId,
-  name: chatUserName,
-};
+import { chatApiKey } from "./chatConfig";
+import { useChatContext } from "./ChatContext";
+import { User } from "./users/user";
 
 export type UseChatClientType = {
-  clientIsReady: boolean;
+  isLoading: boolean;
+  connectUser: (
+    user: User,
+    userChatToken: string
+  ) => Promise<void>;
+};
+
+export type UseChatClientProps = {
+  onSuccess?: () => void;
+  onError?: (error: any) => void;
 };
 
 //this is a singleton so we can access it safely in multiple places
-//This client uses the api key that is available for the client. The
-//secret should only ever be used in the backend. 
 const chatClient = StreamChat.getInstance(chatApiKey);
 
-export const useChatClient = () => {
-  const [clientisReady, setClientIsReady] = useState(false);
+export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { setUser } = useChatContext();
 
-  useEffect(() => {
-    const setupClient = async () => {
-      try {
-        //first we would fetch the user token from the backend
-        await chatClient.connectUser(user, chatUserToken);
-        setClientIsReady(true);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(
-            `An error occurred while connecting the user: ${error.message}`
-          );
-        }
-      }
-    };
+  const connectUser = async (user: User, chatAccessToken: string) => {
+    try {
+      //first we would fetch the user token from the backend
+      await chatClient.connectUser(
+        { id: user.id, name: user.username },
+        chatAccessToken
+      );
 
-    if (!chatClient.userID) {
-      setupClient();
+      setUser(user);
+      setIsLoading(true);
+      onSuccess && onSuccess();
+    } catch (error) {
+      onError && onError(error);
     }
-  });
+  };
 
   const result: UseChatClientType = {
-    clientIsReady: clientisReady,
+    isLoading: isLoading,
+    connectUser,
   };
 
   return result;

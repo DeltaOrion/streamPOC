@@ -1,12 +1,15 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 import type { Channel } from "stream-chat";
 import { DefaultStreamChatGenerics, MessageType } from "stream-chat-expo";
+import { User } from "./users/user";
 
 export type ChatContextType = {
   channel: Channel<DefaultStreamChatGenerics> | null;
   setChannel: (channel: Channel<DefaultStreamChatGenerics> | null) => void;
   thread: MessageType<DefaultStreamChatGenerics> | null;
   setThread: (channel: MessageType<DefaultStreamChatGenerics> | null) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
 };
 
 export type ChatProviderProps = {
@@ -23,6 +26,8 @@ export const ChatContext = createContext<ChatContextType>({
   setChannel: () => {},
   thread: null,
   setThread: () => {},
+  user: null,
+  setUser: () => {},
 });
 
 export const ChatProvider = ({ children }: ChatProviderProps) => {
@@ -30,6 +35,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     useState<Channel<DefaultStreamChatGenerics> | null>(null);
   const [thread, setThread] =
     useState<MessageType<DefaultStreamChatGenerics> | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   return (
     <ChatContext.Provider
@@ -38,6 +44,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         setChannel: setChannel,
         thread: thread,
         setThread: setThread,
+        user: user,
+        setUser: setUser,
       }}
     >
       {children}

@@ -30,6 +30,16 @@ builder.Services.AddSingleton<IMongoClient>(client);
 builder.Services.AddSingleton<IMongoDatabase>(database);
 builder.Services.AddSingleton<IMongoCollection<User>>(userCollection);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
+
 var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -39,6 +49,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.MapControllers();
 

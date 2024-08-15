@@ -8,10 +8,10 @@ import {
   ChannelPreviewMessengerProps,
 } from "stream-chat-expo";
 import { useChatContext } from "./ChatContext";
-import { chatUserId } from "./chatConfig";
 
 export function ChannelListScreen() {
-  const { setChannel } = useChatContext();
+  //This hook will be responsble for loading in the chat.
+  const { setChannel, user } = useChatContext();
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   return (
@@ -19,7 +19,7 @@ export function ChannelListScreen() {
       Preview={CustomListItem}
       filters={{
         members: {
-          $in: [chatUserId],
+          $in: [user?.id ?? ""],
         },
       }}
       sort={{
@@ -40,7 +40,6 @@ export function ChannelListScreen() {
  * us to do this. We just have to override the subcomponent
  */
 function CustomListItem(props: ChannelPreviewMessengerProps) {
-
   const { unread } = props;
   const backgroundColor = unread ? "#e6f7ff" : "#fff";
 

@@ -32,6 +32,12 @@ public class UserController : ControllerBase
         //Don't do this if you like testing your code. Instead, this should all be done in
         //a layered architecture. Do NOT use the login scheme i've presented here, use an actual
         //auth provider like cognito or auth0
+        var existingUser = await _userCollection.Find(x => x.Username == input.Username).FirstOrDefaultAsync();
+        if (existingUser is null)
+        {
+            return StatusCode(409);
+        }
+
         var session = await _mongoClient.StartSessionAsync();
         session.StartTransaction();
 
@@ -55,12 +61,14 @@ public class UserController : ControllerBase
             };
 
             //these can be done in parallel for efficiency
-            var mongoTask = _userCollection.InsertOneAsync(user);
+            var mongoTask = _userCollection.InsertOneAsync(session, user);
 
             //upsert user handles both creates and updates
             var streamTask = _userClient.UpsertAsync(userRequest);
             await mongoTask;
             response = await streamTask;
+
+            await session.CommitTransactionAsync();
 
             return Ok(new UserLoginResponse()
             {
@@ -82,14 +90,14 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("/login")]
     public async Task<ActionResult<UserLoginResponse>> Login([FromBody] UserLoginInput input)
     {
         var user = await _userCollection.Find(x => x.Username == input.Username && x.Password == input.Password)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
         if (user is null)
         {
-            return Unauthorized();
+            return StatusCode(401);
         }
 
         return Ok(new UserLoginResponse
@@ -101,6 +109,6 @@ public class UserController : ControllerBase
 
     private string GetToken(User user)
     {
-        return _userClient.CreateToken(user.Id);
+        return _userClient.CreateToken(user.Id, DateTimeOffset.Now.AddHours(6));
     }
 }
