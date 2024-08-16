@@ -1,7 +1,7 @@
 import { ParamListBase, useNavigation } from "@react-navigation/native";
 
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { View } from "react-native";
+import { Button, View } from "react-native";
 import {
   ChannelList,
   ChannelPreviewMessenger,
@@ -15,21 +15,31 @@ export function ChannelListScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
 
   return (
-    <ChannelList
-      Preview={CustomListItem}
-      filters={{
-        members: {
-          $in: [user?.id ?? ""],
-        },
-      }}
-      sort={{
-        last_message_at: -1,
-      }}
-      onSelect={(channel) => {
-        setChannel(channel);
-        navigation.navigate("ChannelScreen");
-      }}
-    />
+    <>
+      <View>
+        <Button
+          title="Create Channels"
+          onPress={() => {
+            navigation.navigate("UserList");
+          }}
+        ></Button>
+      </View>
+      <ChannelList
+        Preview={CustomListItem}
+        filters={{
+          members: {
+            $in: [user?.id ?? ""],
+          },
+        }}
+        sort={{
+          last_message_at: -1,
+        }}
+        onSelect={(channel) => {
+          setChannel(channel);
+          navigation.navigate("ChannelScreen");
+        }}
+      />
+    </>
   );
 }
 

@@ -1,4 +1,4 @@
-import { ParamListBase, useNavigation } from "@react-navigation/native";
+import { Link, ParamListBase, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
@@ -45,12 +45,7 @@ export function RegisterPage() {
         title={"Register"}
       />
       <Text>Already have an account?</Text>
-      <Button
-        title="Login"
-        onPress={() => {
-          navigation.navigate("Login");
-        }}
-      />
+      <Link to="/Login">Login</Link>
     </>
   );
 }

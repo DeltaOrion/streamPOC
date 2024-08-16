@@ -1,12 +1,17 @@
-﻿using ChatAPI.Users;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using StreamChat.Clients;
 using StreamChat.Models;
 using User = ChatAPI.Models.User;
 
-namespace ChatAPI;
+namespace ChatAPI.Users;
+
+/**
+ * Obviously the security of this application is terrible with plain-text passwords (that are sent to the frontend lol) so dont copy that. The main take-away of this controller
+ * is that the backend must be responsible for handing out the chat access tokens to the frontend. We are free to use any auth scheme we want such as amazon cognito to confirm
+ * the user is authorised and then hand the token off. The frontend should never have access to the api-key secret. 
+ */
 
 [ApiController]
 [Route("/user")]
@@ -26,14 +31,17 @@ public class UserController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("/register")]
+    [HttpGet("list")]
+    public async Task<IEnumerable<User>> ListUsers()
+    {
+        return await _userCollection.Find(FilterDefinition<User>.Empty).ToListAsync();
+    }
+
+    [HttpPost("register")]
     public async Task<ActionResult<UserLoginResponse>> Register([FromBody] RegisterUserInput input)
     {
-        //Don't do this if you like testing your code. Instead, this should all be done in
-        //a layered architecture. Do NOT use the login scheme i've presented here, use an actual
-        //auth provider like cognito or auth0
         var existingUser = await _userCollection.Find(x => x.Username == input.Username).FirstOrDefaultAsync();
-        if (existingUser is null)
+        if (existingUser is not null)
         {
             return StatusCode(409);
         }
@@ -90,7 +98,7 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpPost("/login")]
+    [HttpPost("login")]
     public async Task<ActionResult<UserLoginResponse>> Login([FromBody] UserLoginInput input)
     {
         var user = await _userCollection.Find(x => x.Username == input.Username && x.Password == input.Password)

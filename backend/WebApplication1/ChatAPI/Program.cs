@@ -18,13 +18,14 @@ var factory =
     new StreamClientFactory(streamOptions.ApiKey, streamOptions.ApiSecret);
 builder.Services.AddSingleton<IStreamClientFactory>(factory);
 builder.Services.AddSingleton(factory.GetUserClient());
+builder.Services.AddSingleton(factory.GetChannelClient());
 
 var mongoOptions = new MongoDbOptions();
 builder.Configuration.GetSection("MongoDb").Bind(mongoOptions);
 
 var client = new MongoClient(mongoOptions.ConnectionString);
 var database = client.GetDatabase(mongoOptions.DatabaseName);
-var userCollection = database.GetCollection<User>(mongoOptions.DatabaseName);
+var userCollection = database.GetCollection<User>(mongoOptions.UserCollectionName);
 
 builder.Services.AddSingleton<IMongoClient>(client);
 builder.Services.AddSingleton<IMongoDatabase>(database);

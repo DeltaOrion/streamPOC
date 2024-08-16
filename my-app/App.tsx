@@ -5,17 +5,17 @@ import "react-native-gesture-handler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Chat, OverlayProvider } from "stream-chat-expo";
 
-import axios from "axios";
 import { StreamChat } from "stream-chat";
 import { ChannelListScreen } from "./ChannelListScreen";
 import { ChannelScreen } from "./ChannelScreen";
 import { chatApiKey } from "./chatConfig";
 import { ChatProvider } from "./ChatContext";
-import { LoginPage } from "./users/LoginPage";
 import { ThreadScreen } from "./ThreadScreen";
+import { LoginPage } from "./users/LoginPage";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RegisterPage } from "./users/RegisterPage";
+import { UserListPage } from "./users/UserListPage";
 
 const Stack = createNativeStackNavigator();
 //this is a singleton so we can access it safely in multiple places
@@ -52,6 +52,7 @@ export default function App() {
                   <Stack.Navigator>
                     <Stack.Screen name="Login" component={LoginPage} />
                     <Stack.Screen name="Register" component={RegisterPage} />
+                    <Stack.Screen name="UserList" component={UserListPage} />
                     <Stack.Screen
                       name="ChannelList"
                       component={ChannelListScreen}

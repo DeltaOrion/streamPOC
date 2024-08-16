@@ -1,8 +1,8 @@
-import { ParamListBase, useNavigation } from "@react-navigation/native";
+import { Link, ParamListBase, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useMutation } from "@tanstack/react-query";
 import React from "react";
-import { Button, Text } from "react-native";
+import { Text } from "react-native";
 import { useChatClient } from "../useChatClient";
 import { LoginForm } from "./LoginForm";
 import { userService } from "./userService";
@@ -14,6 +14,9 @@ export function LoginPage() {
       //once we finish the login we navigate away
       navigation.navigate("ChannelList");
     },
+    onError: (error) => {
+      console.error(error);
+    },
   });
 
   const { mutateAsync } = useMutation({
@@ -22,6 +25,9 @@ export function LoginPage() {
       //ideally we would store stuff in local storage and stuff like that.
       //however for the PoC the main point is you can grab from the backend and load it in
       connectUser(result.user, result.accessToken);
+    },
+    onError: (error) => {
+      console.error(error);
     },
   });
 
@@ -39,12 +45,7 @@ export function LoginPage() {
         title={"Login"}
       />
       <Text>Dont have an account</Text>
-      <Button
-        title="Register"
-        onPress={() => {
-          navigation.navigate("Register");
-        }}
-      />
+      <Link to="/Register">Register</Link>
     </>
   );
 }
