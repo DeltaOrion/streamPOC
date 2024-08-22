@@ -3,6 +3,7 @@ import { StreamChat } from "stream-chat";
 import { chatApiKey } from "./chatConfig";
 import { useChatContext } from "./ChatContext";
 import { User } from "./users/user";
+import messaging from '@react-native-firebase/messaging';
 
 export type UseChatClientType = {
   isLoading: boolean;
@@ -23,6 +24,16 @@ const chatClient = StreamChat.getInstance(chatApiKey);
 export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { setUser } = useChatContext();
+
+  const requestPermission = async () => {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+  if (enabled) {
+    console.log('Authorization status:', authStatus);
+  }
+};
 
   const connectUser = async (user: User, chatAccessToken: string) => {
     try {

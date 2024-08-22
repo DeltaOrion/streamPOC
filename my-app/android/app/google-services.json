@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210469316460",
+    "project_id": "notification-demo-f14fa",
+    "storage_bucket": "notification-demo-f14fa.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210469316460:android:7211ec0bf00dd452893549",
+        "android_client_info": {
+          "package_name": "com.jaegerjacob.myapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0k4zuSZylcrFSIK_9E3fQuKqydVw36mE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
