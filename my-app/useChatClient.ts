@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { StreamChat } from "stream-chat";
 import { chatApiKey } from "./chatConfig";
 import { useChatContext } from "./ChatContext";
+import { notificationService } from "./notifications/notificationService";
 import { User } from "./users/user";
 
 export type UseChatClientType = {
@@ -22,6 +23,7 @@ const chatClient = StreamChat.getInstance(chatApiKey);
 export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const unsubscribeTokenRefreshListenerRef = useRef<() => void>();
+  const tokenRef = useRef<string>();
 
   const { setUser, user } = useChatContext();
 
@@ -46,7 +48,6 @@ export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
     const token = await messaging().getToken();
     const pushProvider = "firebase";
     const pushProviderName = "Android";
-    console.log(token);
     //tell the client about the current token. When we call client.connect, it will
     //give the token to stream.
     chatClient.setLocalDevice({
@@ -67,10 +68,12 @@ export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
     //this function is quite important because there is a chance the token may change and there are many
     //reasons for this. In either case we need to handle it by telling the api that the token is invalid
     //and telling the client about the new device
+    tokenRef.current = token;
     unsubscribeTokenRefreshListenerRef.current = messaging().onTokenRefresh(
       async (newToken) => {
         await Promise.all([
           removeOldToken(),
+          (tokenRef.current = newToken),
           chatClient.addDevice(
             newToken,
             pushProvider,
@@ -89,6 +92,14 @@ export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
       { id: user.id, name: user.username },
       chatAccessToken
     );
+
+    if (tokenRef.current) {
+      await notificationService.addDevice({
+        userId: user.id,
+        deviceToken: tokenRef.current,
+        provider: "Android",
+      });
+    }
 
     setUser(user);
   };

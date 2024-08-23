@@ -1,3 +1,4 @@
+using Amazon.SimpleNotificationService;
 using ChatAPI;
 using ChatAPI.Models;
 using MongoDB.Driver;
@@ -30,6 +31,7 @@ var userCollection = database.GetCollection<User>(mongoOptions.UserCollectionNam
 builder.Services.AddSingleton<IMongoClient>(client);
 builder.Services.AddSingleton<IMongoDatabase>(database);
 builder.Services.AddSingleton<IMongoCollection<User>>(userCollection);
+builder.Services.AddAWSService<IAmazonSimpleNotificationService>();
 
 builder.Services.AddCors(options =>
 {
