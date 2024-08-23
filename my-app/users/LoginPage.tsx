@@ -12,6 +12,7 @@ export function LoginPage() {
   const { isLoading, initialiseUser: connectUser } = useChatClient({
     onSuccess: () => {
       //once we finish the login we navigate away
+      console.log("ON SUCCESS");
       navigation.navigate("ChannelList");
     },
     onError: (error) => {

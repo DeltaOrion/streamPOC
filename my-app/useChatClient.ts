@@ -84,25 +84,25 @@ export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
   };
 
   const connectUser = async (user: User, chatAccessToken: string) => {
-    try {
-      //first we would fetch the user token from the backend
-      await chatClient.connectUser(
-        { id: user.id, name: user.username },
-        chatAccessToken
-      );
+    //first we would fetch the user token from the backend
+    await chatClient.connectUser(
+      { id: user.id, name: user.username },
+      chatAccessToken
+    );
 
-      setUser(user);
-      setIsLoading(true);
+    setUser(user);
+  };
+
+  const initialiseUser = async (user: User, chatAccessToken: string) => {
+    try {
+      await requestPermission();
+      await registerPushToken();
+      await connectUser(user, chatAccessToken);
+      setIsLoading(false);
       onSuccess && onSuccess();
     } catch (error) {
       onError && onError(error);
     }
-  };
-
-  const initialiseUser = async (user: User, chatAccessToken: string) => {
-    await requestPermission();
-    await registerPushToken();
-    await connectUser(user, chatAccessToken);
   };
 
   const result: UseChatClientType = {

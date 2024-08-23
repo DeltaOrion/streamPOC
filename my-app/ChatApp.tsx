@@ -33,7 +33,7 @@ export function ChatApp() {
       } else {
         await setUser(user.user);
         await initialiseUser(user.user, user.accessToken);
-        initialRouteRef.current = "";
+        initialRouteRef.current = "ChannelList";
         setUserLoading(false);
       }
     };

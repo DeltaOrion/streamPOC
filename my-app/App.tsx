@@ -23,8 +23,8 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <ChatProvider>
         <GestureHandlerRootView style={{ flex: 1 }}>
-          <NotificationHandler />
           <SafeAreaView style={{ flex: 1 }}>
+            <NotificationHandler />
             {/* THe overlay provider is the highest level of stream chat components and must
         be used near the root of the application (outside navigation stack). It allows users to
         interact with messages, long press views, use the full screen image viewer etc. It provides
