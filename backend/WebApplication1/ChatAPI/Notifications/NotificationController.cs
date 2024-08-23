@@ -46,7 +46,7 @@ public class NotificationController : ControllerBase
         {
             PlatformApplicationArn = _platformApplications[provider],
             Token = deviceToken,
-            CustomUserData = JsonSerializer.Serialize(new UserData() { UserId = userId })
+            CustomUserData = "",
         });
 
         var endpointArn = createPlatform.EndpointArn;
@@ -86,10 +86,5 @@ public class NotificationController : ControllerBase
         }
 
         return Ok();
-    }
-
-    private class UserData
-    {
-        public string UserId { get; set; }
     }
 }
