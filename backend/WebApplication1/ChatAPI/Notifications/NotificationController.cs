@@ -46,7 +46,9 @@ public class NotificationController : ControllerBase
         {
             PlatformApplicationArn = _platformApplications[provider],
             Token = deviceToken,
-            CustomUserData = "",
+            CustomUserData =
+                "", //i would recommend being careful with this field as having some kind of user specific information will cause errors if two users
+            //have the same device. 
         });
 
         var endpointArn = createPlatform.EndpointArn;

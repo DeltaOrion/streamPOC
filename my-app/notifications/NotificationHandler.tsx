@@ -11,7 +11,16 @@ export function NotificationHandler() {
   const client = StreamChat.getInstance(chatApiKey);
 
   useEffect(() => {
-    //this function is run when the app is minimised or closed
+
+    messaging().onMessage(async (remoteMessage) => {
+        //at this point we might want to display a toast, maybe add something to the notification tray, filter based on what channel screen we are on etc.
+        console.log(remoteMessage);
+        if (Platform.OS === "android") {
+          ToastAndroid.show("Received Message", ToastAndroid.SHORT);
+        }
+    })
+
+        //this function is run when the app is minimised or closed
     messaging().setBackgroundMessageHandler(async (remoteMessage) => {
       //this is run each time the notification is received
       const response = await getUserFromLocalStorage();
@@ -48,22 +57,7 @@ export function NotificationHandler() {
       }
     });
 
-    const foregroundSubscription = Notifications.setNotificationHandler({
-      handleNotification: async (notification) => {
-        //we can probably handle this better by giving them a link or whatnot but this should do the trick. We can do all sorts of filtering for if they are on the channel
-        //or whatever.
-        console.log(notification);
-        if (Platform.OS === "android") {
-          ToastAndroid.show("Received Message", ToastAndroid.SHORT);
-        }
 
-        return {
-          shouldShowAlert: true,
-          shouldPlaySound: false,
-          shouldSetBadge: false,
-        };
-      },
-    });
   }, []);
 
   return null;
