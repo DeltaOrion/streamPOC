@@ -9,7 +9,7 @@ import { userService } from "./userService";
 
 export function LoginPage() {
   const navigation = useNavigation<NativeStackNavigationProp<ParamListBase>>();
-  const { isLoading, connectUser } = useChatClient({
+  const { isLoading, initialiseUser: connectUser } = useChatClient({
     onSuccess: () => {
       //once we finish the login we navigate away
       navigation.navigate("ChannelList");

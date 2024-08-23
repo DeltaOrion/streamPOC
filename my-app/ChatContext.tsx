@@ -1,7 +1,10 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, ReactNode, useContext, useState } from "react";
 import type { Channel } from "stream-chat";
 import { DefaultStreamChatGenerics, MessageType } from "stream-chat-expo";
 import { User } from "./users/user";
+import { userService } from "./users/userService";
+import { UserLoginResponse } from "./users/userLoginResponse";
 
 export type ChatContextType = {
   channel: Channel<DefaultStreamChatGenerics> | null;
@@ -9,7 +12,8 @@ export type ChatContextType = {
   thread: MessageType<DefaultStreamChatGenerics> | null;
   setThread: (channel: MessageType<DefaultStreamChatGenerics> | null) => void;
   user: User | null;
-  setUser: (user: User | null) => void;
+  getUserFromLocalStorage: () => Promise<UserLoginResponse | null>;
+  setUser: (user: User | null) => Promise<void>;
 };
 
 export type ChatProviderProps = {
@@ -27,7 +31,10 @@ export const ChatContext = createContext<ChatContextType>({
   thread: null,
   setThread: () => {},
   user: null,
-  setUser: () => {},
+  setUser: async () => {},
+  getUserFromLocalStorage: async () => {
+    return null;
+  },
 });
 
 export const ChatProvider = ({ children }: ChatProviderProps) => {
@@ -37,6 +44,32 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
     useState<MessageType<DefaultStreamChatGenerics> | null>(null);
   const [user, setUser] = useState<User | null>(null);
 
+  const updateUser = async (user: User | null) => {
+    setUser(user);
+    if (!user) {
+      AsyncStorage.removeItem("@user-id");
+    } else {
+      await AsyncStorage.setItem("@username", user.username);
+      await AsyncStorage.setItem("@password", user.password);
+    }
+  };
+
+  const getUserFromLocalStorage = async () => {
+    //production level security here
+    const storedUserId = await AsyncStorage.getItem("@username");
+    const storedUserPassword = await AsyncStorage.getItem("@password");
+    if (storedUserId && storedUserPassword) {
+      const user = await userService.login({
+        username: storedUserId,
+        password: storedUserPassword,
+      });
+
+      return user;
+    }
+
+    return null;
+  };
+
   return (
     <ChatContext.Provider
       value={{
@@ -45,7 +78,8 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
         thread: thread,
         setThread: setThread,
         user: user,
-        setUser: setUser,
+        getUserFromLocalStorage: getUserFromLocalStorage,
+        setUser: updateUser,
       }}
     >
       {children}

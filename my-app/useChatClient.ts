@@ -1,16 +1,14 @@
-import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import messaging from "@react-native-firebase/messaging";
+import { useRef, useState } from "react";
 import { StreamChat } from "stream-chat";
 import { chatApiKey } from "./chatConfig";
 import { useChatContext } from "./ChatContext";
 import { User } from "./users/user";
-import messaging from '@react-native-firebase/messaging';
 
 export type UseChatClientType = {
   isLoading: boolean;
-  connectUser: (
-    user: User,
-    userChatToken: string
-  ) => Promise<void>;
+  initialiseUser: (user: User, userChatToken: string) => Promise<void>;
 };
 
 export type UseChatClientProps = {
@@ -23,17 +21,67 @@ const chatClient = StreamChat.getInstance(chatApiKey);
 
 export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { setUser } = useChatContext();
+  const unsubscribeTokenRefreshListenerRef = useRef<() => void>();
 
+  const { setUser, user } = useChatContext();
+
+  //we must request permission before we can get the push token, otherwise android wont let us have it
+  //additionally in a normal app we do need to handle the case where we dont get permissions
   const requestPermission = async () => {
-  const authStatus = await messaging().requestPermission();
-  const enabled =
-    authStatus === messaging.AuthorizationStatus.AUTHORIZED || authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  if (enabled) {
-    console.log('Authorization status:', authStatus);
-  }
-};
+    if (enabled) {
+      console.log("Authorization status:", authStatus);
+    } else {
+      //handle no permission case
+    }
+  };
+
+  const registerPushToken = async () => {
+    //get the FCM token
+    unsubscribeTokenRefreshListenerRef.current?.();
+    const token = await messaging().getToken();
+    const pushProvider = "firebase";
+    const pushProviderName = "Android";
+    console.log(token);
+    //tell the client about the current token. When we call client.connect, it will
+    //give the token to stream.
+    chatClient.setLocalDevice({
+      id: token,
+      push_provider: pushProvider,
+      push_provider_name: pushProviderName,
+    });
+
+    await AsyncStorage.setItem("@current_push_token", token);
+
+    const removeOldToken = async () => {
+      const oldToken = await AsyncStorage.getItem("@current_push_token");
+      if (oldToken !== null) {
+        await chatClient.removeDevice(oldToken);
+      }
+    };
+
+    //this function is quite important because there is a chance the token may change and there are many
+    //reasons for this. In either case we need to handle it by telling the api that the token is invalid
+    //and telling the client about the new device
+    unsubscribeTokenRefreshListenerRef.current = messaging().onTokenRefresh(
+      async (newToken) => {
+        await Promise.all([
+          removeOldToken(),
+          chatClient.addDevice(
+            newToken,
+            pushProvider,
+            user?.id,
+            pushProviderName
+          ), //this time we provide the user id because the client is already connected.
+          AsyncStorage.setItem("@current_push_token", newToken),
+        ]);
+      }
+    );
+  };
 
   const connectUser = async (user: User, chatAccessToken: string) => {
     try {
@@ -51,9 +99,15 @@ export const useChatClient = ({ onSuccess, onError }: UseChatClientProps) => {
     }
   };
 
+  const initialiseUser = async (user: User, chatAccessToken: string) => {
+    await requestPermission();
+    await registerPushToken();
+    await connectUser(user, chatAccessToken);
+  };
+
   const result: UseChatClientType = {
     isLoading: isLoading,
-    connectUser,
+    initialiseUser: initialiseUser,
   };
 
   return result;
