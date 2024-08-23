@@ -1,8 +1,14 @@
 import { ParamListBase, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Text } from "react-native";
-import { Channel, MessageInput, MessageList } from "stream-chat-expo";
+import {
+  Channel,
+  MessageInput,
+  MessageList,
+  useAttachmentPickerContext,
+} from "stream-chat-expo";
 import { useChatContext } from "./ChatContext";
+import * as ImagePicker from "expo-image-picker";
 
 export function ChannelScreen() {
   const { channel, setThread } = useChatContext();
@@ -12,7 +18,9 @@ export function ChannelScreen() {
     return <Text>Unknown channel</Text>;
   }
 
-  //As we can see displaying an individual channel is easy as. 
+  //https://github.com/GetStream/stream-chat-react-native/issues/1763
+  //displaying from camera is really, hard, would have to override entire camera input button and
+  //manually handle adding attachments. 
 
   return (
     <Channel channel={channel}>
@@ -24,7 +32,6 @@ export function ChannelScreen() {
           }
         }}
       />
-      <MessageInput />
     </Channel>
   );
 }
